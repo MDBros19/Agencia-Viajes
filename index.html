@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agencia de Viajes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --ink: #132524;
+    --ink-soft: #22403d;
+    --paper: #F1F4F1;
+    --card: #FFFFFF;
+    --line: #DCE3DF;
+    --muted: #67746f;
+    --gold: #C9922E;
+    --gold-deep: #9c7020;
+    --coral: #BD5B45;
+    --coral-soft: #f4e2dd;
+    --green-status: #3f7d5c;
+    --green-status-soft: #dfeee5;
+    --radius-card: 14px;
+    --shadow-card: 0 1px 2px rgba(19,37,36,0.06), 0 8px 24px rgba(19,37,36,0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .display-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  button { font-family: inherit; }
+
+  /* ============ LAYOUT ============ */
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 236px;
+    flex-shrink: 0;
+    background: var(--ink);
+    color: #eef3f1;
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .marca {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 8px 26px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 22px;
+  }
+
+  .marca .icono {
+    font-size: 20px;
+  }
+
+  .marca h1 {
+    font-size: 19px;
+    color: #fff;
+  }
+
+  .marca span.sub {
+    display: block;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11.5px;
+    color: #9db3ac;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  nav.tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  nav.tabs button {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+    border-radius: 9px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #c9d6d2;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  nav.tabs button .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4c645f;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+  }
+
+  nav.tabs button:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+  }
+
+  nav.tabs button.activo {
+    background: rgba(201,146,46,0.16);
+    color: #fff;
+  }
+
+  nav.tabs button.activo .dot {
+    background: var(--gold);
+  }
+
+  .sidebar-pie {
+    margin-top: auto;
+    padding: 14px 12px 0 12px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 11.5px;
+    color: #85978f;
+    line-height: 1.5;
+  }
+
+  main.contenido {
+    flex: 1;
+    padding: 34px 42px 60px 42px;
+    max-width: 1180px;
+  }
+
+  .encabezado-pantalla {
+    margin-bottom: 26px;
+  }
+
+  .encabezado-pantalla h2 {
+    font-size: 27px;
+    color: var(--ink);
+  }
+
+  .encabezado-pantalla p.desc {
+    margin: 6px 0 0 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  .oculto { display: none !important; }
+
+  /* ============ TARJETAS TIPO BOLETO ============ */
+
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 18px;
+    margin-bottom: 34px;
+  }
+
+  .ticket {
+    position: relative;
+    background: var(--card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px 16px 20px;
+    overflow: hidden;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: var(--paper);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .ticket::before { left: -8px; }
+  .ticket::after { right: -8px; }
+
+  .ticket .perforado {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 64px;
+    border-left: 1.5px dashed #d7ded9;
+  }
+
+  .ticket .etiqueta {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .ticket .display-num {
+    font-size: 30px;
+    color: var(--ink);
+  }
+
+  .ticket .tendencia {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--green-status);
+    font-weight: 500;
+  }
+
+  /* ============ SECCIONES / TABLAS ============ */
+
+  .seccion {
+    background: var(--card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 24px 26px 10px 26px;
+    margin-bottom: 26px;
+  }
+
+  .seccion-titulo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .seccion-titulo h3 {
+    font-size: 17.5px;
+  }
+
+  .seccion-titulo .conteo {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 0 10px 10px 10px;
+    border-bottom: 1.5px solid var(--line);
+  }
+
+  td {
+    padding: 13px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .estado {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .estado.enviada { background: var(--green-status-soft); color: var(--green-status); }
+  .estado.aprobada { background: var(--green-status-soft); color: var(--green-status); }
+  .estado.nueva { background: var(--coral-soft); color: var(--coral); }
+  .estado.cotizada { background: #e6eef4; color: #3a6b8a; }
+  .estado.en-analisis { background: #f2ecdc; color: var(--gold-deep); }
+
+  .vacio {
+    padding: 26px 10px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  /* ============ FORMULARIO ============ */
+
+  .boton-nueva {
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 22px;
+    transition: background 0.15s ease;
+  }
+
+  .boton-nueva:hover { background: var(--ink-soft); }
+
+  .formulario {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 24px 26px 22px 26px;
+    margin-bottom: 26px;
+  }
+
+  .formulario h3 {
+    font-size: 17px;
+    margin-bottom: 18px;
+  }
+
+  .rejilla-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+
+  .campo { margin-bottom: 4px; }
+
+  .campo.full { grid-column: 1 / -1; }
+
+  .campo label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .campo input,
+  .campo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    transition: border-color 0.15s ease;
+  }
+
+  .campo input:focus,
+  .campo select:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: #fff;
+  }
+
+  .acciones-form {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .boton-guardar {
+    background: var(--gold);
+    color: #2a1d05;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .boton-guardar:hover { background: var(--gold-deep); color: #fff; }
+  .boton-guardar:disabled { opacity: 0.6; cursor: default; }
+
+  .boton-cancelar {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 13.5px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .mensaje-form {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .mensaje-form.ok { color: var(--green-status); }
+  .mensaje-form.error { color: var(--coral); }
+
+  /* ============ PLACEHOLDER ============ */
+
+  .placeholder {
+    background: var(--card);
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius-card);
+    padding: 44px 30px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .placeholder .icono-grande { font-size: 26px; margin-bottom: 10px; }
+  .placeholder p { max-width: 380px; margin: 6px auto 0 auto; font-size: 14px; line-height: 1.6; }
+
+  /* ============ COTIZADOR ============ */
+
+  .buscador-destino {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    max-width: 420px;
+  }
+
+  .buscador-destino input {
+    flex: 1;
+    padding: 11px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--card);
+  }
+
+  .buscador-destino input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .buscador-destino button {
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .buscador-destino button:hover { background: var(--ink-soft); }
+
+  .boton-secundario {
+    all: unset;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--gold-deep);
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1.5px solid var(--gold);
+  }
+
+  .boton-secundario:hover { background: #fdf5e8; }
+
+  .columnas-alternativas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 6px;
+    padding-bottom: 20px;
+  }
+
+  .titulo-columna {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 10px 2px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--line);
+  }
+
+  .titulo-columna.recomendada { color: var(--green-status); border-color: var(--green-status); }
+  .titulo-columna.vip { color: var(--gold-deep); border-color: var(--gold); }
+  .titulo-columna.accesible { color: var(--coral); border-color: var(--coral); }
+
+  .lista-alt { display: flex; flex-direction: column; gap: 10px; }
+
+  .tarjeta-alt {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .tarjeta-alt .imagen-alt {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .tarjeta-alt .imagen-alt img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tarjeta-alt .info-alt { min-width: 0; }
+
+  .tarjeta-alt .destino-alt {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+
+  .tarjeta-alt .aerolinea-alt {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tarjeta-alt .precio-alt {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+
+  /* ============ DOCUMENTACIÓN ============ */
+
+  .bloque-documentacion .vacio { padding: 10px 4px; }
+
+  .viabilidad-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .viabilidad-toggle button {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--line);
+    color: var(--muted);
+  }
+
+  .viabilidad-toggle button.activo-si {
+    background: var(--green-status-soft);
+    border-color: var(--green-status);
+    color: var(--green-status);
+  }
+
+  .viabilidad-toggle button.activo-no {
+    background: var(--coral-soft);
+    border-color: var(--coral);
+    color: var(--coral);
+  }
+
+  .lista-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 26px;
+    margin-bottom: 16px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .check-item input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .campo-razon {
+    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+
+  .campo-razon textarea {
+    width: 100%;
+    min-height: 64px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--coral);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13.5px;
+    background: var(--coral-soft);
+    resize: vertical;
+  }
+
+  .campo-razon textarea:focus { outline: none; }
+
+  .campo-otros-doc {
+    max-width: 420px;
+    margin-bottom: 16px;
+  }
+
+  .campo-otros-doc label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .campo-otros-doc input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13.5px;
+    background: var(--paper);
+  }
+
+  .dos-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .tarjetas-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+  @media (max-width: 980px) {
+    .columnas-alternativas { grid-template-columns: 1fr; }
+    .dos-columnas { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 860px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; }
+    main.contenido { padding: 24px; }
+    .tarjetas { grid-template-columns: 1fr 1fr; }
+    .rejilla-campos { grid-template-columns: 1fr; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="marca">
+      <span class="icono">✈</span>
+      <div>
+        <h1>Rumbo</h1>
+        <span class="sub">Agencia de viajes</span>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button data-pantalla="resumen" class="activo"><span class="dot"></span>Resumen</button>
+      <button data-pantalla="solicitudes"><span class="dot"></span>Solicitudes</button>
+      <button data-pantalla="cotizador"><span class="dot"></span>Cotizador</button>
+      <button data-pantalla="cotizaciones"><span class="dot"></span>Cotizaciones y cierre</button>
+    </nav>
+
+    <div class="sidebar-pie">
+      Conectado a<br>agencia_viajes.xlsx
+    </div>
+  </aside>
+
+  <main class="contenido">
+
+    <!-- ==================== RESUMEN ==================== -->
+    <section id="pantallaResumen">
+      <div class="encabezado-pantalla">
+        <h2>Mesa de control</h2>
+        <p class="desc">Lo que está pasando en la agencia hoy.</p>
+      </div>
+
+      <div class="tarjetas">
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">Solicitudes activas</div>
+          <div class="display-num" id="statSolicitudes">—</div>
+        </div>
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">Cotizaciones</div>
+          <div class="display-num" id="statCotizaciones">—</div>
+        </div>
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">Pendientes</div>
+          <div class="display-num" id="statPendientes">—</div>
+        </div>
+        <div class="ticket">
+          <div class="etiqueta">Total cotizado</div>
+          <div class="display-num" id="statTotalCotizado">—</div>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Solicitudes recientes</h3>
+          <span class="conteo" id="conteoResumen"></span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Cliente</th><th>Destino</th><th>Categoría</th></tr>
+          </thead>
+          <tbody id="tablaResumenSolicitudes">
+            <tr><td colspan="3" class="vacio">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Cotizaciones listas para seguimiento</h3>
+          <span class="conteo" id="conteoResumenCotizaciones"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Folio</th><th>Cliente</th><th>Destino</th>
+              <th>Costo neto</th><th>Utilidad</th><th>Total cliente</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaResumenCotizaciones">
+            <tr><td colspan="7" class="vacio">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== SOLICITUDES ==================== -->
+    <section id="pantallaSolicitudes" class="oculto">
+      <div class="encabezado-pantalla">
+        <h2>Solicitudes de viaje</h2>
+        <p class="desc">Registra y consulta las peticiones de tus clientes.</p>
+      </div>
+
+      <button class="boton-nueva" id="btnNuevaSolicitud">+ Nueva solicitud</button>
+
+      <div id="formularioSolicitud" class="formulario oculto">
+        <h3>Nueva solicitud</h3>
+
+        <div class="rejilla-campos">
+          <div class="campo">
+            <label for="cliente">Cliente</label>
+            <input type="text" id="cliente" placeholder="Nombre del cliente">
+          </div>
+          <div class="campo">
+            <label for="destino">Destino</label>
+            <input type="text" id="destino" placeholder="Ciudad o país">
+          </div>
+          <div class="campo">
+            <label for="categoria">Categoría de viaje</label>
+            <select id="categoria">
+              <option value="">Seleccionar</option>
+              <option>Mochilero</option>
+              <option>Tour</option>
+              <option>VIP</option>
+              <option>Aventura</option>
+              <option>Luna de miel</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="pasajeros">Número de pasajeros</label>
+            <input type="number" id="pasajeros" min="1" placeholder="Ej. 2">
+          </div>
+          <div class="campo">
+            <label for="salida">Fecha de salida</label>
+            <input type="date" id="salida">
+          </div>
+          <div class="campo">
+            <label for="regreso">Fecha de regreso</label>
+            <input type="date" id="regreso">
+          </div>
+        </div>
+
+        <div class="acciones-form">
+          <button class="boton-guardar" id="btnGuardarSolicitud">Guardar solicitud</button>
+          <button class="boton-cancelar" id="btnCancelarSolicitud">Cancelar</button>
+          <span class="mensaje-form" id="mensajeFormSolicitud"></span>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Solicitudes registradas</h3>
+          <span class="conteo" id="conteoSolicitudes"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th><th>Destino</th><th>Categoría</th>
+              <th>Pasajeros</th><th>Salida</th><th>Regreso</th>
+            </tr>
+          </thead>
+          <tbody id="tablaSolicitudes">
+            <tr><td colspan="6" class="vacio">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== COTIZADOR ==================== -->
+    <section id="pantallaCotizador" class="oculto">
+      <div class="encabezado-pantalla">
+        <h2>Cotizador de viajes</h2>
+        <p class="desc">Busca un destino y arma la propuesta con vuelos y hospedaje.</p>
+      </div>
+
+      <div class="buscador-destino">
+        <input type="text" id="buscarDestino" placeholder="Buscar destino, ej. Tokio">
+        <button id="btnBuscarDestino">Buscar</button>
+      </div>
+
+      <!-- Catálogo de alternativas -->
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Alternativas disponibles</h3>
+          <button class="boton-secundario" id="btnNuevaAlternativa">+ Agregar alternativa</button>
+        </div>
+
+        <div id="formularioAlternativa" class="formulario oculto">
+          <div class="rejilla-campos">
+            <div class="campo">
+              <label for="altDestino">Destino</label>
+              <input type="text" id="altDestino" placeholder="Ej. Tokio">
+            </div>
+            <div class="campo">
+              <label for="altCategoria">Categoría</label>
+              <select id="altCategoria">
+                <option value="">Seleccionar</option>
+                <option>Recomendada</option>
+                <option>VIP</option>
+                <option>Tarifa accesible</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="altAerolinea">Aerolínea</label>
+              <input type="text" id="altAerolinea" placeholder="Ej. United Airlines">
+            </div>
+            <div class="campo">
+              <label for="altPrecio">Precio total (USD)</label>
+              <input type="number" id="altPrecio" min="0" placeholder="Ej. 8100">
+            </div>
+            <div class="campo full">
+              <label for="altImagen">Imagen (emoji o URL de imagen)</label>
+              <input type="text" id="altImagen" placeholder="🗼  o  https://...">
+            </div>
+          </div>
+          <div class="acciones-form">
+            <button class="boton-guardar" id="btnGuardarAlternativa">Guardar alternativa</button>
+            <button class="boton-cancelar" id="btnCancelarAlternativa">Cancelar</button>
+            <span class="mensaje-form" id="mensajeFormAlternativa"></span>
+          </div>
+        </div>
+
+        <div class="columnas-alternativas" id="columnasAlternativas">
+          <div class="columna-alt">
+            <h4 class="titulo-columna recomendada">Recomendada</h4>
+            <div id="listaRecomendada" class="lista-alt"><p class="vacio">Buscando…</p></div>
+          </div>
+          <div class="columna-alt">
+            <h4 class="titulo-columna vip">VIP</h4>
+            <div id="listaVip" class="lista-alt"><p class="vacio">Buscando…</p></div>
+          </div>
+          <div class="columna-alt">
+            <h4 class="titulo-columna accesible">Tarifa accesible</h4>
+            <div id="listaAccesible" class="lista-alt"><p class="vacio">Buscando…</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentación necesaria -->
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Documentación necesaria</h3>
+          <span class="conteo" id="destinoDocumentacion"></span>
+        </div>
+
+        <div id="bloqueDocumentacion" class="bloque-documentacion">
+          <p class="vacio">Busca un destino arriba para revisar o registrar su documentación.</p>
+        </div>
+      </div>
+
+      <!-- Vuelos y hospedajes lado a lado -->
+      <div class="dos-columnas">
+
+        <div class="seccion">
+          <div class="seccion-titulo">
+            <h3>Vuelos disponibles</h3>
+            <button class="boton-secundario" id="btnNuevoVuelo">+ Cargar vuelo</button>
+          </div>
+
+          <div id="formularioVuelo" class="formulario oculto">
+            <div class="rejilla-campos">
+              <div class="campo full">
+                <label for="vueloDestino">Destino</label>
+                <input type="text" id="vueloDestino" placeholder="Ej. Tokio">
+              </div>
+              <div class="campo">
+                <label for="vueloAerolinea">Aerolínea</label>
+                <input type="text" id="vueloAerolinea" placeholder="Ej. Aeromexico">
+              </div>
+              <div class="campo">
+                <label for="vueloEscala">Escala</label>
+                <select id="vueloEscala">
+                  <option>Directo</option>
+                  <option>Sí</option>
+                </select>
+              </div>
+              <div class="campo full">
+                <label for="vueloRuta">Ruta / conexión</label>
+                <input type="text" id="vueloRuta" placeholder="Ej. CDMX - LAX - NRT">
+              </div>
+              <div class="campo">
+                <label for="vueloTarifa">Tarifa neta (USD)</label>
+                <input type="number" id="vueloTarifa" min="0" placeholder="Ej. 7800">
+              </div>
+              <div class="campo">
+                <label for="vueloCupos">Cupos</label>
+                <input type="number" id="vueloCupos" min="1" placeholder="Ej. 4">
+              </div>
+            </div>
+            <div class="acciones-form">
+              <button class="boton-guardar" id="btnGuardarVuelo">Guardar vuelo</button>
+              <button class="boton-cancelar" id="btnCancelarVuelo">Cancelar</button>
+              <span class="mensaje-form" id="mensajeFormVuelo"></span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr><th>Aerolínea</th><th>Ruta</th><th>Escala</th><th>Tarifa neta</th><th>Cupos</th></tr>
+            </thead>
+            <tbody id="tablaVuelos">
+              <tr><td colspan="5" class="vacio">Busca un destino arriba.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="seccion">
+          <div class="seccion-titulo">
+            <h3>Hospedajes</h3>
+            <button class="boton-secundario" id="btnNuevoHospedaje">+ Cargar hospedaje</button>
+          </div>
+
+          <div id="formularioHospedaje" class="formulario oculto">
+            <div class="rejilla-campos">
+              <div class="campo full">
+                <label for="hospDestino">Destino</label>
+                <input type="text" id="hospDestino" placeholder="Ej. Tokio">
+              </div>
+              <div class="campo full">
+                <label for="hospNombre">Hospedaje</label>
+                <input type="text" id="hospNombre" placeholder="Ej. Park Hyatt Tokyo">
+              </div>
+              <div class="campo">
+                <label for="hospNoches">Noches</label>
+                <input type="number" id="hospNoches" min="1" placeholder="Ej. 9">
+              </div>
+              <div class="campo">
+                <label for="hospZona">Zona</label>
+                <input type="text" id="hospZona" placeholder="Ej. Shinjuku">
+              </div>
+              <div class="campo">
+                <label for="hospNeto">Neto total (USD)</label>
+                <input type="number" id="hospNeto" min="0" placeholder="Ej. 21000">
+              </div>
+              <div class="campo">
+                <label for="hospCategoria">Categoría (estrellas)</label>
+                <select id="hospCategoria">
+                  <option value="">Seleccionar</option>
+                  <option value="3">3 estrellas</option>
+                  <option value="4">4 estrellas</option>
+                  <option value="5">5 estrellas</option>
+                </select>
+              </div>
+            </div>
+            <div class="acciones-form">
+              <button class="boton-guardar" id="btnGuardarHospedaje">Guardar hospedaje</button>
+              <button class="boton-cancelar" id="btnCancelarHospedaje">Cancelar</button>
+              <span class="mensaje-form" id="mensajeFormHospedaje"></span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr><th>Hospedaje</th><th>Noches</th><th>Zona</th><th>Neto total</th><th>Cat.</th></tr>
+            </thead>
+            <tbody id="tablaHospedajes">
+              <tr><td colspan="5" class="vacio">Busca un destino arriba.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== COTIZACIONES ==================== -->
+    <section id="pantallaCotizaciones" class="oculto">
+      <div class="encabezado-pantalla">
+        <h2>Cotizaciones y cierre</h2>
+        <p class="desc">Da seguimiento a lo que ya se envió al cliente.</p>
+      </div>
+
+      <div class="tarjetas tarjetas-4">
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">Enviadas</div>
+          <div class="display-num" id="statEnviadas">—</div>
+        </div>
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">Aprobadas</div>
+          <div class="display-num" id="statAprobadas">—</div>
+        </div>
+        <div class="ticket">
+          <div class="perforado"></div>
+          <div class="etiqueta">En borrador</div>
+          <div class="display-num" id="statBorrador">—</div>
+        </div>
+        <div class="ticket">
+          <div class="etiqueta">Total $</div>
+          <div class="display-num" id="statTotalGeneral">—</div>
+        </div>
+      </div>
+
+      <button class="boton-nueva" id="btnNuevaCotizacion">+ Nueva cotización</button>
+
+      <div id="formularioCotizacion" class="formulario oculto">
+        <h3>Nueva cotización</h3>
+        <div class="rejilla-campos">
+          <div class="campo">
+            <label for="cotCliente">Cliente</label>
+            <input type="text" id="cotCliente" placeholder="Nombre del cliente">
+          </div>
+          <div class="campo">
+            <label for="cotDestino">Destino</label>
+            <input type="text" id="cotDestino" placeholder="Ciudad o país">
+          </div>
+          <div class="campo">
+            <label for="cotCostoNeto">Costo neto (USD)</label>
+            <input type="number" id="cotCostoNeto" min="0" placeholder="Ej. 28800">
+          </div>
+          <div class="campo">
+            <label for="cotUtilidad">Utilidad (USD)</label>
+            <input type="number" id="cotUtilidad" min="0" placeholder="Ej. 5760">
+          </div>
+          <div class="campo">
+            <label for="cotTotalCliente">Total cliente (USD)</label>
+            <input type="number" id="cotTotalCliente" min="0" placeholder="Ej. 34560">
+          </div>
+          <div class="campo">
+            <label for="cotEstado">Estado</label>
+            <select id="cotEstado">
+              <option>Nueva</option>
+              <option>En análisis</option>
+              <option>Cotizada</option>
+              <option>Enviada</option>
+              <option>Aprobada</option>
+            </select>
+          </div>
+        </div>
+        <div class="acciones-form">
+          <button class="boton-guardar" id="btnGuardarCotizacion">Guardar cotización</button>
+          <button class="boton-cancelar" id="btnCancelarCotizacion">Cancelar</button>
+          <span class="mensaje-form" id="mensajeFormCotizacion"></span>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">
+          <h3>Todas las cotizaciones</h3>
+          <span class="conteo" id="conteoCotizaciones"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Folio</th><th>Cliente</th><th>Destino</th>
+              <th>Costo neto</th><th>Utilidad</th><th>Total cliente</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCotizaciones">
+            <tr><td colspan="7" class="vacio">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+
+  const API_BASE = "https://mdbros19.pythonanywhere.com";
+
+  // ---------- Navegación entre pantallas ----------
+
+  const pantallas = {
+    resumen: document.getElementById("pantallaResumen"),
+    solicitudes: document.getElementById("pantallaSolicitudes"),
+    cotizador: document.getElementById("pantallaCotizador"),
+    cotizaciones: document.getElementById("pantallaCotizaciones"),
+  };
+
+  const botonesNav = document.querySelectorAll("nav.tabs button");
+
+  botonesNav.forEach(function (boton) {
+    boton.addEventListener("click", function () {
+      const destino = boton.dataset.pantalla;
+
+      Object.values(pantallas).forEach(function (p) { p.classList.add("oculto"); });
+      pantallas[destino].classList.remove("oculto");
+
+      botonesNav.forEach(function (b) { b.classList.remove("activo"); });
+      boton.classList.add("activo");
+    });
+  });
+
+  // ---------- Mostrar / cancelar formulario ----------
+
+  const btnNuevaSolicitud = document.getElementById("btnNuevaSolicitud");
+  const formularioSolicitud = document.getElementById("formularioSolicitud");
+  const btnCancelarSolicitud = document.getElementById("btnCancelarSolicitud");
+  const mensajeFormSolicitud = document.getElementById("mensajeFormSolicitud");
+
+  btnNuevaSolicitud.addEventListener("click", function () {
+    formularioSolicitud.classList.remove("oculto");
+    btnNuevaSolicitud.classList.add("oculto");
+  });
+
+  btnCancelarSolicitud.addEventListener("click", function () {
+    formularioSolicitud.classList.add("oculto");
+    btnNuevaSolicitud.classList.remove("oculto");
+    mensajeFormSolicitud.textContent = "";
+  });
+
+  // ---------- Cargar solicitudes desde el backend ----------
+
+  function formatearFecha(iso) {
+    if (!iso) return "—";
+    const partes = iso.split("-");
+    if (partes.length !== 3) return iso;
+    return partes[2] + "/" + partes[1] + "/" + partes[0];
+  }
+
+  async function cargarSolicitudes() {
+    const tbodySolicitudes = document.getElementById("tablaSolicitudes");
+    const tbodyResumen = document.getElementById("tablaResumenSolicitudes");
+
+    try {
+      const resp = await fetch(API_BASE + "/solicitudes");
+      if (!resp.ok) throw new Error("Respuesta no válida del servidor");
+
+      const solicitudes = await resp.json();
+
+      document.getElementById("statSolicitudes").textContent = solicitudes.length;
+      document.getElementById("conteoSolicitudes").textContent =
+        solicitudes.length + (solicitudes.length === 1 ? " registro" : " registros");
+      document.getElementById("conteoResumen").textContent =
+        solicitudes.length + (solicitudes.length === 1 ? " registro" : " registros");
+
+      if (solicitudes.length === 0) {
+        tbodySolicitudes.innerHTML = '<tr><td colspan="6" class="vacio">Todavía no hay solicitudes registradas.</td></tr>';
+        tbodyResumen.innerHTML = '<tr><td colspan="3" class="vacio">Todavía no hay solicitudes registradas.</td></tr>';
+        return;
+      }
+
+      tbodySolicitudes.innerHTML = solicitudes.map(function (s) {
+        return "<tr>" +
+          "<td>" + s.cliente + "</td>" +
+          "<td>" + s.destino + "</td>" +
+          "<td>" + s.categoria + "</td>" +
+          "<td>" + s.pasajeros + "</td>" +
+          "<td>" + formatearFecha(s.salida) + "</td>" +
+          "<td>" + formatearFecha(s.regreso) + "</td>" +
+          "</tr>";
+      }).join("");
+
+      const recientes = solicitudes.slice(-3).reverse();
+      tbodyResumen.innerHTML = recientes.map(function (s) {
+        return "<tr><td>" + s.cliente + "</td><td>" + s.destino + "</td><td>" + s.categoria + "</td></tr>";
+      }).join("");
+
+    } catch (err) {
+      tbodySolicitudes.innerHTML = '<tr><td colspan="6" class="vacio">No se pudo conectar con el servidor. ¿Está corriendo app.py?</td></tr>';
+      tbodyResumen.innerHTML = '<tr><td colspan="3" class="vacio">No se pudo conectar con el servidor.</td></tr>';
+    }
+  }
+
+  // ---------- Guardar nueva solicitud ----------
+
+  const btnGuardarSolicitud = document.getElementById("btnGuardarSolicitud");
+
+  btnGuardarSolicitud.addEventListener("click", async function () {
+    const cliente = document.getElementById("cliente").value.trim();
+    const destino = document.getElementById("destino").value.trim();
+    const categoria = document.getElementById("categoria").value;
+    const pasajeros = document.getElementById("pasajeros").value;
+    const salida = document.getElementById("salida").value;
+    const regreso = document.getElementById("regreso").value;
+
+    if (!cliente || !destino || !categoria || !pasajeros || !salida || !regreso) {
+      mensajeFormSolicitud.textContent = "Completa todos los campos antes de guardar.";
+      mensajeFormSolicitud.className = "mensaje-form error";
+      return;
+    }
+
+    btnGuardarSolicitud.disabled = true;
+    mensajeFormSolicitud.textContent = "Guardando…";
+    mensajeFormSolicitud.className = "mensaje-form";
+
+    try {
+      const resp = await fetch(API_BASE + "/solicitud", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cliente: cliente,
+          destino: destino,
+          categoria: categoria,
+          pasajeros: Number(pasajeros),
+          salida: salida,
+          regreso: regreso
+        })
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data.error || "No se pudo guardar la solicitud");
+      }
+
+      mensajeFormSolicitud.textContent = "Solicitud guardada.";
+      mensajeFormSolicitud.className = "mensaje-form ok";
+
+      ["cliente", "destino", "categoria", "pasajeros", "salida", "regreso"].forEach(function (id) {
+        document.getElementById(id).value = "";
+      });
+
+      await cargarSolicitudes();
+
+      setTimeout(function () {
+        formularioSolicitud.classList.add("oculto");
+        btnNuevaSolicitud.classList.remove("oculto");
+        mensajeFormSolicitud.textContent = "";
+      }, 900);
+
+    } catch (err) {
+      mensajeFormSolicitud.textContent = err.message;
+      mensajeFormSolicitud.className = "mensaje-form error";
+    } finally {
+      btnGuardarSolicitud.disabled = false;
+    }
+  });
+
+  // ==========================================
+  // UTILIDADES COMPARTIDAS
+  // ==========================================
+
+  function dinero(n) {
+    const num = Number(n) || 0;
+    return "$" + num.toLocaleString("es-MX", { maximumFractionDigits: 0 });
+  }
+
+  function claseEstado(estado) {
+    return (estado || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-");
+  }
+
+  // Muestra/oculta un formulario y limpia su mensaje al cancelar
+  function conectarFormulario(btnAbrir, contenedorForm, btnCancelar, mensajeEl) {
+    if (btnAbrir) {
+      btnAbrir.addEventListener("click", function () {
+        contenedorForm.classList.remove("oculto");
+        btnAbrir.classList.add("oculto");
+      });
+    }
+    btnCancelar.addEventListener("click", function () {
+      contenedorForm.classList.add("oculto");
+      if (btnAbrir) btnAbrir.classList.remove("oculto");
+      if (mensajeEl) mensajeEl.textContent = "";
+    });
+  }
+
+  // ==========================================
+  // RESUMEN: estadísticas y tabla de cotizaciones
+  // ==========================================
+
+  async function cargarResumenCotizaciones() {
+    const tbodyResumenCot = document.getElementById("tablaResumenCotizaciones");
+    try {
+      const resp = await fetch(API_BASE + "/cotizaciones");
+      const cotizaciones = await resp.json();
+
+      document.getElementById("statCotizaciones").textContent = cotizaciones.length;
+
+      const pendientes = cotizaciones.filter(function (c) {
+        return c.estado !== "Aprobada";
+      });
+      document.getElementById("statPendientes").textContent = pendientes.length;
+
+      const totalCotizado = cotizaciones.reduce(function (acc, c) {
+        return acc + (Number(c.total_cliente) || 0);
+      }, 0);
+      document.getElementById("statTotalCotizado").textContent = dinero(totalCotizado);
+
+      document.getElementById("conteoResumenCotizaciones").textContent =
+        cotizaciones.length + (cotizaciones.length === 1 ? " registro" : " registros");
+
+      if (cotizaciones.length === 0) {
+        tbodyResumenCot.innerHTML = '<tr><td colspan="7" class="vacio">Todavía no hay cotizaciones registradas.</td></tr>';
+        return;
+      }
+
+      const recientes = cotizaciones.slice(-5).reverse();
+      tbodyResumenCot.innerHTML = recientes.map(function (c) {
+        return "<tr>" +
+          "<td>" + c.folio + "</td><td>" + c.cliente + "</td><td>" + c.destino + "</td>" +
+          "<td>" + dinero(c.costo_neto) + "</td><td>" + dinero(c.utilidad) + "</td>" +
+          "<td>" + dinero(c.total_cliente) + "</td>" +
+          '<td><span class="estado ' + claseEstado(c.estado) + '">' + c.estado + "</span></td>" +
+          "</tr>";
+      }).join("");
+
+    } catch (err) {
+      tbodyResumenCot.innerHTML = '<tr><td colspan="7" class="vacio">No se pudo conectar con el servidor.</td></tr>';
+    }
+  }
+
+  // ==========================================
+  // COTIZADOR: alternativas, vuelos y hospedajes
+  // ==========================================
+
+  const buscarDestinoInput = document.getElementById("buscarDestino");
+  const btnBuscarDestino = document.getElementById("btnBuscarDestino");
+
+  function renderAlternativas(lista) {
+    const columnas = {
+      "recomendada": document.getElementById("listaRecomendada"),
+      "vip": document.getElementById("listaVip"),
+      "tarifa accesible": document.getElementById("listaAccesible"),
+    };
+
+    Object.values(columnas).forEach(function (col) {
+      col.innerHTML = '<p class="vacio">Sin alternativas para este destino.</p>';
+    });
+
+    lista.forEach(function (alt) {
+      const clave = (alt.categoria || "").toLowerCase();
+      const columna = columnas[clave];
+      if (!columna) return;
+
+      if (columna.querySelector(".vacio")) columna.innerHTML = "";
+
+      const esImagenUrl = (alt.imagen || "").startsWith("http");
+      const imagenHtml = esImagenUrl
+        ? '<img src="' + alt.imagen + '" alt="">'
+        : (alt.imagen || "🧳");
+
+      const tarjeta = document.createElement("div");
+      tarjeta.className = "tarjeta-alt";
+      tarjeta.innerHTML =
+        '<div class="imagen-alt">' + imagenHtml + "</div>" +
+        '<div class="info-alt">' +
+          '<div class="destino-alt">' + alt.destino + "</div>" +
+          '<div class="aerolinea-alt">' + alt.aerolinea + "</div>" +
+          '<div class="precio-alt">' + dinero(alt.precio) + "</div>" +
+        "</div>";
+      columna.appendChild(tarjeta);
+    });
+  }
+
+  function renderVuelos(lista) {
+    const tbody = document.getElementById("tablaVuelos");
+    if (lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="vacio">No hay vuelos cargados para este destino.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = lista.map(function (v) {
+      return "<tr><td>" + v.aerolinea + "</td><td>" + v.ruta + "</td><td>" + v.escala +
+        "</td><td>" + dinero(v.tarifa_neta) + "</td><td>" + v.cupos + "</td></tr>";
+    }).join("");
+  }
+
+  function renderHospedajes(lista) {
+    const tbody = document.getElementById("tablaHospedajes");
+    if (lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="vacio">No hay hospedajes cargados para este destino.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = lista.map(function (h) {
+      return "<tr><td>" + h.hospedaje + "</td><td>" + h.noches + "</td><td>" + h.zona +
+        "</td><td>" + dinero(h.neto_total) + "</td><td>" + h.categoria + "★</td></tr>";
+    }).join("");
+  }
+
+  function renderDocumentacion(destino, datos) {
+    datos = datos || { pasaporte: false, visa: false, identificacion: false, otros: "", viable: true, razon: "" };
+    const bloque = document.getElementById("bloqueDocumentacion");
+
+    bloque.innerHTML =
+      '<div class="viabilidad-toggle">' +
+        '<button type="button" id="btnViableSi" class="' + (datos.viable ? "activo-si" : "") + '">✓ Destino viable</button>' +
+        '<button type="button" id="btnViableNo" class="' + (!datos.viable ? "activo-no" : "") + '">✕ No es posible visitar este destino</button>' +
+      "</div>" +
+      '<div class="lista-checks">' +
+        '<label class="check-item"><input type="checkbox" id="chkPasaporte" ' + (datos.pasaporte ? "checked" : "") + "> Pasaporte</label>" +
+        '<label class="check-item"><input type="checkbox" id="chkVisa" ' + (datos.visa ? "checked" : "") + "> Visa</label>" +
+        '<label class="check-item"><input type="checkbox" id="chkIdentificacion" ' + (datos.identificacion ? "checked" : "") + "> Identificación</label>" +
+      "</div>" +
+      '<div class="campo-otros-doc">' +
+        '<label for="inputOtrosDoc">Otra documentación (opcional)</label>' +
+        '<input type="text" id="inputOtrosDoc" placeholder="Ej. Certificado de vacunación" value="' + (datos.otros || "").replace(/"/g, "&quot;") + '">' +
+      "</div>" +
+      '<div class="campo-razon ' + (datos.viable ? "oculto" : "") + '" id="bloqueRazon">' +
+        '<label style="display:block;font-size:12.5px;font-weight:600;color:var(--coral);margin-bottom:6px;">Razón por la que no es posible viajar a este destino</label>' +
+        '<textarea id="textareaRazon" placeholder="Ej. Requiere visa que tarda meses en tramitarse...">' + (datos.razon || "") + "</textarea>" +
+      "</div>" +
+      '<div class="acciones-form">' +
+        '<button class="boton-guardar" id="btnGuardarDocumentacion">Guardar documentación</button>' +
+        '<span class="mensaje-form" id="mensajeFormDocumentacion"></span>' +
+      "</div>";
+
+    let viableActual = !!datos.viable;
+    const btnSi = document.getElementById("btnViableSi");
+    const btnNo = document.getElementById("btnViableNo");
+    const bloqueRazon = document.getElementById("bloqueRazon");
+
+    btnSi.addEventListener("click", function () {
+      viableActual = true;
+      btnSi.classList.add("activo-si");
+      btnNo.classList.remove("activo-no");
+      bloqueRazon.classList.add("oculto");
+    });
+
+    btnNo.addEventListener("click", function () {
+      viableActual = false;
+      btnNo.classList.add("activo-no");
+      btnSi.classList.remove("activo-si");
+      bloqueRazon.classList.remove("oculto");
+    });
+
+    document.getElementById("btnGuardarDocumentacion").addEventListener("click", async function () {
+      const boton = this;
+      const msg = document.getElementById("mensajeFormDocumentacion");
+      const cuerpo = {
+        destino: destino,
+        pasaporte: document.getElementById("chkPasaporte").checked,
+        visa: document.getElementById("chkVisa").checked,
+        identificacion: document.getElementById("chkIdentificacion").checked,
+        otros: document.getElementById("inputOtrosDoc").value.trim(),
+        viable: viableActual,
+        razon: document.getElementById("textareaRazon").value.trim(),
+      };
+
+      if (!viableActual && !cuerpo.razon) {
+        msg.textContent = "Explica la razón por la que no es posible visitar este destino.";
+        msg.className = "mensaje-form error";
+        return;
+      }
+
+      boton.disabled = true;
+      msg.textContent = "Guardando…";
+      msg.className = "mensaje-form";
+
+      try {
+        const resp = await fetch(API_BASE + "/documentacion", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "No se pudo guardar");
+        msg.textContent = "Documentación guardada.";
+        msg.className = "mensaje-form ok";
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.className = "mensaje-form error";
+      } finally {
+        boton.disabled = false;
+      }
+    });
+  }
+
+  async function buscarDestino() {
+    const destino = buscarDestinoInput.value.trim();
+    if (!destino) return;
+
+    document.getElementById("destinoDocumentacion").textContent = destino;
+
+    try {
+      const [rAlt, rVuelos, rHosp, rDoc] = await Promise.all([
+        fetch(API_BASE + "/alternativas?destino=" + encodeURIComponent(destino)),
+        fetch(API_BASE + "/vuelos?destino=" + encodeURIComponent(destino)),
+        fetch(API_BASE + "/hospedajes?destino=" + encodeURIComponent(destino)),
+        fetch(API_BASE + "/documentacion?destino=" + encodeURIComponent(destino)),
+      ]);
+      renderAlternativas(await rAlt.json());
+      renderVuelos(await rVuelos.json());
+      renderHospedajes(await rHosp.json());
+      renderDocumentacion(destino, await rDoc.json());
+
+      // Precargamos el destino en los formularios de abajo para agilizar
+      document.getElementById("vueloDestino").value = destino;
+      document.getElementById("hospDestino").value = destino;
+      document.getElementById("altDestino").value = destino;
+
+    } catch (err) {
+      document.getElementById("tablaVuelos").innerHTML =
+        '<tr><td colspan="5" class="vacio">No se pudo conectar con el servidor.</td></tr>';
+    }
+  }
+
+  btnBuscarDestino.addEventListener("click", buscarDestino);
+  buscarDestinoInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") buscarDestino();
+  });
+
+  // ---- Formulario: nueva alternativa ----
+
+  conectarFormulario(
+    document.getElementById("btnNuevaAlternativa"),
+    document.getElementById("formularioAlternativa"),
+    document.getElementById("btnCancelarAlternativa"),
+    document.getElementById("mensajeFormAlternativa")
+  );
+
+  document.getElementById("btnGuardarAlternativa").addEventListener("click", async function () {
+    const boton = this;
+    const msg = document.getElementById("mensajeFormAlternativa");
+    const cuerpo = {
+      destino: document.getElementById("altDestino").value.trim(),
+      categoria: document.getElementById("altCategoria").value,
+      aerolinea: document.getElementById("altAerolinea").value.trim(),
+      precio: document.getElementById("altPrecio").value,
+      imagen: document.getElementById("altImagen").value.trim(),
+    };
+
+    if (!cuerpo.destino || !cuerpo.categoria || !cuerpo.aerolinea || !cuerpo.precio) {
+      msg.textContent = "Completa destino, categoría, aerolínea y precio.";
+      msg.className = "mensaje-form error";
+      return;
+    }
+
+    boton.disabled = true;
+    try {
+      const resp = await fetch(API_BASE + "/alternativa", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo guardar");
+
+      msg.textContent = "Alternativa guardada.";
+      msg.className = "mensaje-form ok";
+      buscarDestinoInput.value = cuerpo.destino;
+      await buscarDestino();
+
+      setTimeout(function () {
+        document.getElementById("formularioAlternativa").classList.add("oculto");
+        document.getElementById("btnNuevaAlternativa").classList.remove("oculto");
+        msg.textContent = "";
+      }, 900);
+
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "mensaje-form error";
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // ---- Formulario: nuevo vuelo ----
+
+  conectarFormulario(
+    document.getElementById("btnNuevoVuelo"),
+    document.getElementById("formularioVuelo"),
+    document.getElementById("btnCancelarVuelo"),
+    document.getElementById("mensajeFormVuelo")
+  );
+
+  document.getElementById("btnGuardarVuelo").addEventListener("click", async function () {
+    const boton = this;
+    const msg = document.getElementById("mensajeFormVuelo");
+    const cuerpo = {
+      destino: document.getElementById("vueloDestino").value.trim(),
+      aerolinea: document.getElementById("vueloAerolinea").value.trim(),
+      ruta: document.getElementById("vueloRuta").value.trim(),
+      escala: document.getElementById("vueloEscala").value,
+      tarifa_neta: document.getElementById("vueloTarifa").value,
+      cupos: document.getElementById("vueloCupos").value,
+    };
+
+    if (!cuerpo.destino || !cuerpo.aerolinea || !cuerpo.ruta || !cuerpo.tarifa_neta || !cuerpo.cupos) {
+      msg.textContent = "Completa todos los campos.";
+      msg.className = "mensaje-form error";
+      return;
+    }
+
+    boton.disabled = true;
+    try {
+      const resp = await fetch(API_BASE + "/vuelo", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo guardar");
+
+      msg.textContent = "Vuelo guardado.";
+      msg.className = "mensaje-form ok";
+      buscarDestinoInput.value = cuerpo.destino;
+      await buscarDestino();
+
+      setTimeout(function () {
+        document.getElementById("formularioVuelo").classList.add("oculto");
+        document.getElementById("btnNuevoVuelo").classList.remove("oculto");
+        msg.textContent = "";
+      }, 900);
+
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "mensaje-form error";
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // ---- Formulario: nuevo hospedaje ----
+
+  conectarFormulario(
+    document.getElementById("btnNuevoHospedaje"),
+    document.getElementById("formularioHospedaje"),
+    document.getElementById("btnCancelarHospedaje"),
+    document.getElementById("mensajeFormHospedaje")
+  );
+
+  document.getElementById("btnGuardarHospedaje").addEventListener("click", async function () {
+    const boton = this;
+    const msg = document.getElementById("mensajeFormHospedaje");
+    const cuerpo = {
+      destino: document.getElementById("hospDestino").value.trim(),
+      hospedaje: document.getElementById("hospNombre").value.trim(),
+      noches: document.getElementById("hospNoches").value,
+      zona: document.getElementById("hospZona").value.trim(),
+      neto_total: document.getElementById("hospNeto").value,
+      categoria: document.getElementById("hospCategoria").value,
+    };
+
+    if (!cuerpo.destino || !cuerpo.hospedaje || !cuerpo.noches || !cuerpo.zona || !cuerpo.neto_total || !cuerpo.categoria) {
+      msg.textContent = "Completa todos los campos.";
+      msg.className = "mensaje-form error";
+      return;
+    }
+
+    boton.disabled = true;
+    try {
+      const resp = await fetch(API_BASE + "/hospedaje", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo guardar");
+
+      msg.textContent = "Hospedaje guardado.";
+      msg.className = "mensaje-form ok";
+      buscarDestinoInput.value = cuerpo.destino;
+      await buscarDestino();
+
+      setTimeout(function () {
+        document.getElementById("formularioHospedaje").classList.add("oculto");
+        document.getElementById("btnNuevoHospedaje").classList.remove("oculto");
+        msg.textContent = "";
+      }, 900);
+
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "mensaje-form error";
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // ==========================================
+  // COTIZACIONES Y CIERRE
+  // ==========================================
+
+  conectarFormulario(
+    document.getElementById("btnNuevaCotizacion"),
+    document.getElementById("formularioCotizacion"),
+    document.getElementById("btnCancelarCotizacion"),
+    document.getElementById("mensajeFormCotizacion")
+  );
+
+  async function cargarCotizaciones() {
+    const tbody = document.getElementById("tablaCotizaciones");
+    try {
+      const resp = await fetch(API_BASE + "/cotizaciones");
+      const cotizaciones = await resp.json();
+
+      document.getElementById("conteoCotizaciones").textContent =
+        cotizaciones.length + (cotizaciones.length === 1 ? " registro" : " registros");
+
+      const enviadas = cotizaciones.filter(function (c) { return c.estado === "Enviada"; }).length;
+      const aprobadas = cotizaciones.filter(function (c) { return c.estado === "Aprobada"; }).length;
+      const borrador = cotizaciones.filter(function (c) {
+        return c.estado === "Nueva" || c.estado === "En análisis";
+      }).length;
+      const totalGeneral = cotizaciones.reduce(function (acc, c) {
+        return acc + (Number(c.total_cliente) || 0);
+      }, 0);
+
+      document.getElementById("statEnviadas").textContent = enviadas;
+      document.getElementById("statAprobadas").textContent = aprobadas;
+      document.getElementById("statBorrador").textContent = borrador;
+      document.getElementById("statTotalGeneral").textContent = dinero(totalGeneral);
+
+      if (cotizaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="vacio">Todavía no hay cotizaciones registradas.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = cotizaciones.slice().reverse().map(function (c) {
+        return "<tr>" +
+          "<td>" + c.folio + "</td><td>" + c.cliente + "</td><td>" + c.destino + "</td>" +
+          "<td>" + dinero(c.costo_neto) + "</td><td>" + dinero(c.utilidad) + "</td>" +
+          "<td>" + dinero(c.total_cliente) + "</td>" +
+          '<td><span class="estado ' + claseEstado(c.estado) + '">' + c.estado + "</span></td>" +
+          "</tr>";
+      }).join("");
+
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="7" class="vacio">No se pudo conectar con el servidor.</td></tr>';
+    }
+  }
+
+  document.getElementById("btnGuardarCotizacion").addEventListener("click", async function () {
+    const boton = this;
+    const msg = document.getElementById("mensajeFormCotizacion");
+    const cuerpo = {
+      cliente: document.getElementById("cotCliente").value.trim(),
+      destino: document.getElementById("cotDestino").value.trim(),
+      costo_neto: document.getElementById("cotCostoNeto").value,
+      utilidad: document.getElementById("cotUtilidad").value,
+      total_cliente: document.getElementById("cotTotalCliente").value,
+      estado: document.getElementById("cotEstado").value,
+    };
+
+    if (!cuerpo.cliente || !cuerpo.destino || !cuerpo.costo_neto || !cuerpo.utilidad || !cuerpo.total_cliente) {
+      msg.textContent = "Completa todos los campos.";
+      msg.className = "mensaje-form error";
+      return;
+    }
+
+    boton.disabled = true;
+    try {
+      const resp = await fetch(API_BASE + "/cotizacion", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo guardar");
+
+      msg.textContent = "Cotización " + data.folio + " guardada.";
+      msg.className = "mensaje-form ok";
+
+      ["cotCliente", "cotDestino", "cotCostoNeto", "cotUtilidad", "cotTotalCliente"].forEach(function (id) {
+        document.getElementById(id).value = "";
+      });
+
+      await cargarCotizaciones();
+      await cargarResumenCotizaciones();
+
+      setTimeout(function () {
+        document.getElementById("formularioCotizacion").classList.add("oculto");
+        document.getElementById("btnNuevaCotizacion").classList.remove("oculto");
+        msg.textContent = "";
+      }, 900);
+
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "mensaje-form error";
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // ---------- Carga inicial ----------
+
+  cargarSolicitudes();
+  cargarResumenCotizaciones();
+  cargarCotizaciones();
+
+</script>
+
+</body>
+</html>
