@@ -1133,7 +1133,12 @@
 
 <script>
 
-  const API_BASE = "https://mdbros19.pythonanywhere.com";
+  // Si la página ya está sirviéndose desde PythonAnywhere, usamos rutas
+  // relativas (mismo origen). Si está en cualquier otro dominio (como
+  // GitHub Pages), apuntamos a la URL completa del backend en PythonAnywhere.
+  const API_BASE = window.location.hostname.endsWith("pythonanywhere.com")
+    ? ""
+    : "https://mdbros19.pythonanywhere.com";
 
   // ---------- Navegación entre pantallas ----------
 
