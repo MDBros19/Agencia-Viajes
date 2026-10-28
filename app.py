@@ -24,6 +24,17 @@ def ruta_recurso(relativa):
 
 app = Flask(__name__, template_folder=ruta_recurso("templates"))
 
+
+@app.after_request
+def permitir_cors(respuesta):
+    """Permite que la página en GitHub Pages llame a esta API."""
+    origen = request.headers.get("Origin", "")
+    if origen in ("https://mdbros19.github.io",):
+        respuesta.headers["Access-Control-Allow-Origin"] = origen
+        respuesta.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        respuesta.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return respuesta
+
 # El Excel se guarda SIEMPRE junto al programa (junto al .exe o junto a
 # app.py), así que funciona igual en tu máquina y en la de tu equipo,
 # sin rutas fijas a un usuario en particular.
